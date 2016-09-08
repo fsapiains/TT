@@ -11,35 +11,23 @@ void convert_ml(vector<cv::Mat> & samples, cv::Mat& trainData) {
     trainData = cv::Mat(rows, cols, CV_32FC1);
 
     cout << "train data" << endl;
-    /*
-    vector< Mat >::const_iterator itr = samples.begin();
-    vector< Mat >::const_iterator end = samples.end();
 
-    for (int i = 0; itr != end; ++itr, ++i) {
-        CV_Assert(itr->cols == 1 || itr->rows == 1);
-        if (itr->cols == 1) {
-            //cout<< "entra al if"<<endl;
-            transpose(*(itr), tmp);
-            tmp.copyTo(trainData.row(i));
-        } else if (itr->rows == 1) {
-            //cout<< "entra al else"<<endl;   
-            itr->copyTo(trainData.row(i));
-        }
-        samples.erase(samples.begin() + i);
-    }
-     */
     for (unsigned long i = 0; samples.size(); i++) {
-        vector< Mat >::iterator itr = samples.begin() + i;
-        CV_Assert(itr->cols == 1 || itr->rows == 1);
-        if (itr->cols == 1) {
-            //cout<< "entra al if"<<endl;
-            transpose(*(itr), tmp);
-            tmp.copyTo(trainData.row(i));
-        } else if (itr->rows == 1) {
-            //cout<< "entra al else"<<endl;   
-            itr->copyTo(trainData.row(i));
+        try {
+            vector< Mat >::iterator itr = samples.begin() + i;
+            CV_Assert(itr->cols == 1 || itr->rows == 1);
+            if (itr->cols == 1) {
+                //cout<< "entra al if"<<endl;
+                transpose(*(itr), tmp);
+                tmp.copyTo(trainData.row(i));
+            } else if (itr->rows == 1) {
+                //cout<< "entra al else"<<endl;   
+                itr->copyTo(trainData.row(i));
+            }
+            samples.erase(itr);
+        } catch (cv::Exception e) {
+            cout << endl << "Codigo: " << e.code << " # Mensaje: " << e.msg << endl;
         }
-        samples.erase(itr);
     }
 }
 
@@ -226,14 +214,9 @@ void get_hogs(vector <Mat> & images, vector <Mat> & gradients, const Size & size
     vector<float> descriptors_values;
     vector<Point> locations;
 
-    //    vector< Mat >::iterator img = images.begin();
-    //    vector< Mat >::iterator end = images.end();
-
     cout << "calculando descriptores... " << endl;
 
-    //    for (; img != end; ++img) {
     for (unsigned long i = 0; i < images.size(); i++) {
-        Mat imgMat = images.at(i);
         vector< Mat >::iterator img = images.begin() + i;
 
         //imshow("original", img);
