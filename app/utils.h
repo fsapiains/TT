@@ -2,8 +2,14 @@
 #define UTILS_H
 
 #include <vector>
-#include <opencv/ml.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/ml/ml.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <boost/filesystem.hpp>
+
+#include "PrimalSVM.h"
 
 using namespace cv;
 using namespace std;
