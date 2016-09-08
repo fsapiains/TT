@@ -211,12 +211,15 @@ void get_hogs(vector <Mat> & images, vector <Mat> & gradients, const Size & size
     vector<float> descriptors_values;
     vector<Point> locations;
 
-    vector< Mat >::iterator img = images.begin();
-    vector< Mat >::iterator end = images.end();
+    //    vector< Mat >::iterator img = images.begin();
+    //    vector< Mat >::iterator end = images.end();
 
     cout << "calculando descriptores... " << endl;
 
-    for (; img != end; ++img) {
+    //    for (; img != end; ++img) {
+    for (unsigned long i = 0; i < images.size(); i++) {
+        Mat imgMat = images.at(i);
+        vector< Mat >::iterator img = images.begin() + i;
 
         //imshow("original", img);
         //waitKey(15);
