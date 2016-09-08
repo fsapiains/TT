@@ -2,27 +2,42 @@
 
 void convert_ml(vector<cv::Mat> & samples, cv::Mat& trainData) {
     cout << "convirtiendo...." << endl;
-    const int rows = (int) samples.size();
-    const int cols = (int) std::max(samples[0].cols, samples[0].rows);
+    const unsigned long rows = (unsigned long) samples.size();
+    //    const unsigned long cols = (int) std::max(samples[0].cols, samples[0].rows);
+    unsigned long cols = 0;
+
+    // Busco la columna más grande
+    for (unsigned long idx = 0; idx < rows; idx++) {
+        unsigned long currentCol = (unsigned long) (samples[idx].rows);
+        //        unsigned long currentCol = (unsigned long) std::max(samples[idx].cols, samples[idx].rows);
+        if (currentCol > cols) {
+            cols = currentCol;
+        }
+    }
+
     cv::Mat tmp(1, cols, CV_32FC1); //usada para transposicion si es necesario
 
-    cout << "rows num" << rows << endl;
-    cout << "cols num" << cols << endl;
+
+
+    cout << "rows num: " << rows << endl;
+    cout << "cols num: " << cols << endl;
     trainData = cv::Mat(rows, cols, CV_32FC1);
 
     cout << "train data" << endl;
 
-    for (unsigned long i = 0; samples.size(); i++) {
+    for (unsigned long i = 0; i < rows; i++) {
         try {
             vector< Mat >::iterator itr = samples.begin() + i;
             CV_Assert(itr->cols == 1 || itr->rows == 1);
             if (itr->cols == 1) {
-                //cout<< "entra al if"<<endl;
+                cout << "entra al if" << endl;
                 transpose(*(itr), tmp);
                 tmp.copyTo(trainData.row(i));
+                cout << "Columnas correctas" << endl;
             } else if (itr->rows == 1) {
-                //cout<< "entra al else"<<endl;   
+                cout << "entra al else" << endl;
                 itr->copyTo(trainData.row(i));
+                cout << "Filas correctas" << endl;
             }
             samples.erase(itr);
         } catch (cv::Exception e) {
