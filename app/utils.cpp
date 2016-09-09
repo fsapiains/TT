@@ -3,17 +3,19 @@
 void convert_ml(vector<cv::Mat> & samples, cv::Mat& trainData) {
     cout << "convirtiendo...." << endl;
     const unsigned long rows = (unsigned long) samples.size();
-    //    const unsigned long cols = (int) std::max(samples[0].cols, samples[0].rows);
-    unsigned long cols = 0;
+    const unsigned long cols = (int) std::max(samples[0].cols, samples[0].rows);
 
-    // Busco la columna más grande
-    for (unsigned long idx = 0; idx < rows; idx++) {
-        unsigned long currentCol = (unsigned long) (samples[idx].rows);
-        //        unsigned long currentCol = (unsigned long) std::max(samples[idx].cols, samples[idx].rows);
-        if (currentCol > cols) {
-            cols = currentCol;
-        }
+    /*
+// Busco la columna más grande
+unsigned long cols = 0;
+for (unsigned long idx = 0; idx < rows; idx++) {
+    //        unsigned long currentCol = (unsigned long) (samples[idx].rows);
+    unsigned long currentCol = (unsigned long) std::max(samples[idx].cols, samples[idx].rows);
+    if (currentCol > cols) {
+        cols = currentCol;
     }
+}
+     */
 
     cv::Mat tmp(1, cols, CV_32FC1); //usada para transposicion si es necesario
 
@@ -243,8 +245,10 @@ void get_hogs(vector <Mat> & images, vector <Mat> & gradients, const Size & size
 
         hog.compute(img_gray, descriptors_values, Size(8, 8), Size(0, 0), locations);
 
-        gradients.push_back(Mat(descriptors_values).clone());
-        Mat(descriptors_values).release();
+        // Saco objetos
+        Mat obj = Mat(descriptors_values);
+        gradients.push_back(obj.clone());
+        obj.release();
         images.erase(img);
 
         //showHOG= get_hogdescriptor_visual_image(img_gray, descriptors_values, size, Size(8,8), 3, 2.5);
