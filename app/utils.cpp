@@ -3,23 +3,19 @@
 void convert_ml(vector<cv::Mat> & samples, cv::Mat& trainData) {
     cout << "convirtiendo...." << endl;
     const unsigned long rows = (unsigned long) samples.size();
-    const unsigned long cols = (int) std::max(samples[0].cols, samples[0].rows);
+    //    const unsigned long cols = (int) std::max(samples[0].cols, samples[0].rows);
 
-    /*
-// Busco la columna más grande
-unsigned long cols = 0;
-for (unsigned long idx = 0; idx < rows; idx++) {
-    //        unsigned long currentCol = (unsigned long) (samples[idx].rows);
-    unsigned long currentCol = (unsigned long) std::max(samples[idx].cols, samples[idx].rows);
-    if (currentCol > cols) {
-        cols = currentCol;
+    // Busco la columna más grande
+    unsigned long cols = 0;
+    for (unsigned long idx = 0; idx < rows; idx++) {
+        //        unsigned long currentCol = (unsigned long) (samples[idx].rows);
+        unsigned long currentCol = (unsigned long) std::max(samples[idx].cols, samples[idx].rows);
+        if (currentCol > cols) {
+            cols = currentCol;
+        }
     }
-}
-     */
 
-    cv::Mat tmp(1, cols, CV_32FC1); //usada para transposicion si es necesario
-
-
+    //    cv::Mat tmp(1, cols, CV_32FC1); //usada para transposicion si es necesario
 
     cout << "rows num: " << rows << endl;
     cout << "cols num: " << cols << endl;
@@ -27,25 +23,35 @@ for (unsigned long idx = 0; idx < rows; idx++) {
 
     cout << "train data" << endl;
 
+    long bad = 0;
+    long total = 0;
+
     for (unsigned long i = 0; i < rows; i++) {
-        try {
-            vector< Mat >::iterator itr = samples.begin() + i;
-            CV_Assert(itr->cols == 1 || itr->rows == 1);
-            if (itr->cols == 1) {
-                cout << "entra al if" << endl;
-                transpose(*(itr), tmp);
-                tmp.copyTo(trainData.row(i));
-                cout << "Columnas correctas" << endl;
-            } else if (itr->rows == 1) {
-                cout << "entra al else" << endl;
-                itr->copyTo(trainData.row(i));
-                cout << "Filas correctas" << endl;
-            }
+        vector< Mat >::iterator itr = samples.begin() + i;
+        CV_Assert(itr->cols == 1 || itr->rows == 1);
+        if (itr->cols == 1 && itr->rows > 0) {
+            cv::Mat tmp(1, itr->rows, CV_32FC1); //usada para transposicion si es necesario
+
+            cout << "Cols: " << cols << " # Actual " << itr->rows << endl;
+
+            cout << "entra al if" << endl;
+            transpose(*(itr), tmp);
+            tmp.copyTo(trainData.row(i));
+            tmp.release();
+
+            cout << "Columnas correctas" << endl;
+        } else if (itr->rows == 1) {
+            cout << "entra al else" << endl;
+            itr->copyTo(trainData.row(i));
+            cout << "Filas correctas" << endl;
+        } else {
+            bad += 1;
+            cerr << "Error de dimensiones cols: " << itr->cols << " filas: " << itr->rows << endl;
             samples.erase(itr);
-        } catch (cv::Exception e) {
-            cout << endl << "Codigo: " << e.code << " # Mensaje: " << e.msg << endl;
         }
+        total += 1;
     }
+    cout << "Procesadas " << total << ". Errores: " << bad << endl;
 }
 
 Mat get_hogdescriptor_visual_image(Mat& origImg,
@@ -208,48 +214,64 @@ Mat get_hogdescriptor_visual_image(Mat& origImg,
 
 void load_images(const string & _path, vector <Mat> & images) {
     string path = _path;
-    // Read images
+
+    long totalImgs = 0;
+    long errorImgs = 0;
+    // Iteramos en el directorio y cargamos las imágenes
     for (directory_iterator i(path), end_iter; i != end_iter; i++) {
         string filename = path + i->path().filename().string();
-        //cout << filename << endl;
         Mat img = imread(filename);
-        if (img.empty())
-            break;
-        //imshow("imagen", img);
-        images.push_back(img.clone());
-        img.release();
-        //img= imread(filename);
+        if (img.empty()) {
+            cerr << "No fue posible cargar la imagen '" << filename << "'" << endl;
+            errorImgs += 1;
+        } else {
+            Mat img_gray;
+            cvtColor(img, img_gray, CV_BGR2GRAY);
+            // Ojó acá, valor por defecto
+            resize(img_gray, img_gray, Size(64, 128));
+
+            // Copiamos los datos de la imagen en el vector
+            if (img_gray.cols > 0 && img_gray.rows > 0) {
+                images.push_back(img_gray.clone());
+            } else {
+                errorImgs += 1;
+            }
+            // Liberamos los recursos
+            img.release();
+            img_gray.release();
+        }
+        totalImgs += 1;
     }
+    cout << "Imagenes NO cargadas: " << errorImgs << endl;
+    cout << "Total de imagenes: " << totalImgs << endl;
 }
 
 void get_hogs(vector <Mat> & images, vector <Mat> & gradients, const Size & size) {
-    HOGDescriptor hog;
-
-    hog.winSize = size;
-
-    Mat img_gray, showHOG;
-    vector<float> descriptors_values;
-    vector<Point> locations;
-
     cout << "calculando descriptores... " << endl;
 
     for (unsigned long i = 0; i < images.size(); i++) {
         vector< Mat >::iterator img = images.begin() + i;
 
-        //imshow("original", img);
-        //waitKey(15);
-        //resize(img,img, Size(64,128));
-        cvtColor(*img, img_gray, CV_BGR2GRAY);
+        Mat img_gray = images.at(i);
 
-        //HOGDescriptor hog(Size(64,128), Size(16,16), Size(8,8), Size(8,8), 9);
+        // resize(img_gray, img_gray, size);
 
-        hog.compute(img_gray, descriptors_values, Size(8, 8), Size(0, 0), locations);
+        HOGDescriptor hog;
+        hog.winSize = size;
+
+        vector<float> descriptors_values;
+        vector<Point> locations;
+
+        //        locations.push_back(cv::Point(img_gray.cols / 2, img_gray.rows / 2));
+
+        hog.compute(img_gray, descriptors_values, Size(0, 0), Size(0, 0), locations);
 
         // Saco objetos
         Mat obj = Mat(descriptors_values);
         gradients.push_back(obj.clone());
         obj.release();
-        images.erase(img);
+//        images.erase(img);
+        img_gray.release();
 
         //showHOG= get_hogdescriptor_visual_image(img_gray, descriptors_values, size, Size(8,8), 3, 2.5);
         //imshow("hog",showHOG);

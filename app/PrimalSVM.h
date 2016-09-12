@@ -2,7 +2,7 @@
 #define PRIMALSVM_H
 
 #include <vector>
-#include <opencv/ml.h>
+#include <opencv2/ml/ml.hpp>
 
 using namespace cv;
 using namespace std;

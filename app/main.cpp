@@ -22,8 +22,13 @@ int main(int argc, char** argv) {
     labels.insert(labels.end(), img_neg.size(), -1);
     CV_Assert(old < labels.size());
 
+    cout << "Cantidad de Etiquetas: " << labels.size() << endl;
+
     get_hogs(img_pos, gradient, Size(64, 128));
+    cout << "Gradiente Positivo: " << gradient.size() << endl;
+
     get_hogs(img_neg, gradient, Size(64, 128));
+    cout << "Gradiente Negativo: " << gradient.size() << endl;
 
     train_svm(gradient, labels);
 
