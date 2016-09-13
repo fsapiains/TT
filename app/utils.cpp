@@ -3,7 +3,6 @@
 void convert_ml(vector<cv::Mat> & samples, cv::Mat& trainData) {
     cout << "convirtiendo...." << endl;
     const unsigned long rows = (unsigned long) samples.size();
-    //    const unsigned long cols = (int) std::max(samples[0].cols, samples[0].rows);
 
     // Busco la columna más grande
     unsigned long cols = 0;
@@ -14,8 +13,6 @@ void convert_ml(vector<cv::Mat> & samples, cv::Mat& trainData) {
             cols = currentCol;
         }
     }
-
-    //    cv::Mat tmp(1, cols, CV_32FC1); //usada para transposicion si es necesario
 
     cout << "rows num: " << rows << endl;
     cout << "cols num: " << cols << endl;
@@ -270,7 +267,7 @@ void get_hogs(vector <Mat> & images, vector <Mat> & gradients, const Size & size
         Mat obj = Mat(descriptors_values);
         gradients.push_back(obj.clone());
         obj.release();
-//        images.erase(img);
+        //        images.erase(img);
         img_gray.release();
 
         //showHOG= get_hogdescriptor_visual_image(img_gray, descriptors_values, size, Size(8,8), 3, 2.5);
