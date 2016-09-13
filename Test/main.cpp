@@ -67,6 +67,8 @@ int main(int argc, char** argv) {
     vector< Mat > img_pos;
     vector< Mat > img_neg;
 
+    cout << cv::getBuildInformation() << endl;
+
     load_images("first/pos/", img_pos);
     load_images("first/neg/", img_neg);
 
