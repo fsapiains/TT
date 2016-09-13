@@ -55,6 +55,10 @@ void load_images(const string & _path, vector <Mat> & images) {
         }
     } catch (boost::exception &e) {
         cout << "Excepcion lanzada: (" << boost::diagnostic_information(e) << ")" << endl;
+    } catch (cv::Exception cvex) {
+        cout << "Error (" << cvex.code << ") mensaje: " << cvex.msg << endl;
+    } catch (...) {
+        cout << "Me cai y no tengo muy claro el por que u.u" << endl;
     }
 }
 
